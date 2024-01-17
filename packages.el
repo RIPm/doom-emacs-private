@@ -52,4 +52,4 @@
 (package! org-super-agenda)
 (package! sis)
 ;; (package! rime :recipe (:host github :repo "DogLooksGood/emacs-rime" :files ("*.el" "Makefile" "lib.c")))
-(package! lsp-volar :recipe (:host github :repo "jadestrong/lsp-volar"))
+(package! copilot :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))

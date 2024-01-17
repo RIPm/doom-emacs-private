@@ -7,7 +7,7 @@
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
 (setq user-full-name "RIP"
-      user-mail-address "371662584@qq.com")
+      user-mail-address "junming.lu@ur.com.cn")
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
@@ -34,9 +34,15 @@
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!  (setq org-directory
 ;; "~/org/")
-(setq org-directory "~/Notes/roam_notes")
-(setq org-roam-directory "~/Notes/roam_notes")
+(setq org-directory "~/Notes/roam_notes/")
+;; (add-to-list 'org-agenda-files "~/Notes/roam_notes/")
+(setq org-roam-directory "~/Notes/roam_notes/")
+(setq org-roam-dailies-directory "journal/")
 (setq org-roam-db-location "~/Notes/roam_notes/.cache/org-roam.db")
+(setq org-agenda-files (directory-files-recursively "~/Notes/roam_notes/" "\\.org$"))
+;; set deft root
+(after! deft
+  (setq deft-directory "~/Notes/roam_notes"))
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -100,13 +106,29 @@
 ;; (setq prefer-coding-system 'utf-8)
 ;; (add-to-list 'process-coding-system-alist '("rg" utf-8 . gbk))
 
-;; set deft root
-(after! deft
-  (setq deft-directory "~/Notes/roam_notes"))
-
 (after! org-roam
   (setq org-roam-db-update-method 'immediate)
   (setq org-roam-graph-viewer "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"))
+
+(setq org-roam-dailies-capture-templates
+      '(("d" "default" entry "* %<%I:%M %p>: %?"
+         :if-new (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n"))))
+
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+(after! mu4e
+  (setq mu4e-update-interval 60)
+  (setq mu4e-headers-buffer-name "*mu4e-headers*")
+  (setq +mu4e-compose-org-msg-toggle-next nil)
+  (set-email-account! "mailbox"
+  '((mu4e-sent-folder       . "/mailbox/Sent Mail")
+    (mu4e-drafts-folder     . "/mailbox/Drafts")
+    (mu4e-trash-folder      . "/mailbox/Trash")
+    (mu4e-refile-folder     . "/mailbox/All Mail")
+    (smtpmail-smtp-user     . "junming.lu@ur.com.cn")
+    (mu4e-compose-signature . "---\nYours truly\nThe Baz"))
+  t)
+  (setq mu4e-context-policy 'ask-if-none
+      mu4e-compose-context-policy 'always-ask))
 
 (use-package! lsp-volar)
 
@@ -123,11 +145,13 @@
       org-agenda-start-on-weekday nil)
   (setq org-agenda-custom-commands
         '(("c" "Super view"
-           ((agenda "" ((org-agenda-overriding-header "")
+           ((agenda "" ((org-agenda-span 'day)
                         (org-super-agenda-groups
                          '((:name "Today"
                                   :time-grid t
                                   :date today
+                                  :todo "STRT"
+                                  :scheduled today
                                   :order 1)))))
             (alltodo "" ((org-agenda-overriding-header "")
                          (org-super-agenda-groups
@@ -140,20 +164,18 @@
                             (:name "Important"
                                    :priority "A"
                                    :order 6)
-                            (:name "Today's tasks"
+                            (:name "Scheduled Soon"
+                                   :todo "IDEA"
+                                   :scheduled future
+                                   :order 8)
+                            (:name "Tasks"
                                    :file-path "journal/")
                             (:name "Due Today"
                                    :deadline today
                                    :order 2)
-                            (:name "Scheduled Soon"
-                                   :scheduled future
-                                   :order 8)
                             (:name "Overdue"
                                    :deadline past
                                    :order 7)
-                            (:name "Meetings"
-                                   :and (:todo "MEET" :scheduled future)
-                                   :order 10)
                             (:discard (:not (:todo "TODO")))))))))))
   :config
   (org-super-agenda-mode))
@@ -193,5 +215,13 @@
   ;; enable the /inline english/ mode for all buffers
   (sis-global-inline-mode t)
   )
+
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("<tab>" . 'copilot-accept-completion)
+              ("TAB" . 'copilot-accept-completion)
+              ("C-TAB" . 'copilot-accept-completion-by-word)
+              ("C-<tab>" . 'copilot-accept-completion-by-word)))
 
 (require 'ace-window)
